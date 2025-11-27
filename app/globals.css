@@ -1,26 +1,82 @@
+/* ==================== БҮР ТӨГС ВЕРСИ – ЯМАР Ч ТЕКСТ ХАРАГДАХГҮЙ ГЭДЭГ БОЛОМЖГҮЙ ==================== */
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg:      255 255 255;
+    --card:    255 255 255;
+    --text:    20 20 40;
+    --border:  210 210 230;
+  }
+
+  .dark {
+    --bg:      10 12 26;
+    --card:    22 28 60;
+    --text:    255 255 255;
+    --border:  55 75 120;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Background + Text */
+html, body { 
+  background-color: rgb(var(--bg)); 
+  color: rgb(var(--text));
+}
+
+/* All background override */
+.bg-white, .bg-gray-50, .bg-gray-100, [class*="bg-gray-"], .min-h-screen {
+  background-color: rgb(var(--card)) !important;
+}
+
+/* All text elements */
+nav a, nav button, header a, header button,
+a, button, [href], span, label {
+  color: rgb(var(--text)) !important;
+  font-weight: 600 !important;
+}
+
+/* Form inputs */
+input, textarea, select, button {
+  background-color: rgb(var(--card)) !important;
+  border: 2.5px solid rgb(var(--border)) !important;
+  color: rgb(var(--text)) !important;
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-weight: 500;
+}
+
+/* Submit & main buttons */
+button[type="submit"],
+button.bg-white,
+button.bg-gray-100,
+button.px-8,
+button.py-4 {
+  color: rgb(var(--text)) !important;
+  font-weight: 700 !important;
+  font-size: 17px !important;
+}
+
+/* Buttons that must always stay white text */
+.bg-gray-900, .bg-black, .bg-green-600, .bg-red-600, .bg-blue-600 {
+  color: #ffffff !important;
+}
+
+/* Focus State */
+input:focus, textarea:focus, select:focus {
+  outline: none !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 5px rgba(59,130,246,0.25) !important;
+}
+
+/* ==================== NAVBAR LIGHT/DARK ТЕКСТ ШИЙДЭЛ ==================== */
+
+/* Light mode – navbar текст үргэлж харагдана */
+nav a, nav button {
+  color: rgb(20 20 40) !important;
+}
+
+/* Dark mode – navbar текст цагаан */
+.dark nav a,
+.dark nav button {
+  color: rgb(255 255 255) !important;
 }

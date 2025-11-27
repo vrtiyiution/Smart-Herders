@@ -1,123 +1,135 @@
-// app/(protected)/herder/page.js   ← ЯГ ИЙМ БОЛГООД ХУУЛЧИХААРАЙ!
 "use client";
 
-import { useAuth } from "../../context/AuthContext";
 import { useState } from "react";
 
+const animalTypes = [
+  { value: "cow", label: "Үхэр" },
+  { value: "sheep", label: "Хонь" },
+  { value: "goat", label: "Ямаа" },
+  { value: "horse", label: "Адуу" },
+  { value: "camel", label: "Тэмээ" },
+];
+
+// Ямар ч төрөл заахгүй – зөвхөн энгийн object
+const meatTypes = {
+  cow: ["Үхрийн мах", "Ястай мах", "Дотор мах", "Өөхтэй мах"],
+  sheep: ["Хонины мах", "Ястай мах", "Дотор мах", "Өөх"],
+  goat: ["Ямааны мах", "Ястай мах", "Дотор мах"],
+  horse: ["Адууны мах", "Ястай мах"],
+  camel: ["Тэмээний мах", "Ястай мах", "Бөх"],
+};
+
 export default function HerderDashboard() {
-  const { user } = useAuth(); // ← зөвхөн нэр харуулах эсвэл хэрэглэхэд л ашиглана
-  const [title, setTitle] = useState("");
-  const [desc, setDesc] = useState("");
-  const [price, setPrice] = useState("");
-  const [category, setCategory] = useState("мах");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    const products = JSON.parse(localStorage.getItem("products") || "[]");
-    const newProduct = {
-      id: Date.now().toString(),
-      title,
-      desc,
-      price: Number(price),
-      category,
-      herderId: user.id,
-      herderName: user.name,
-      status: "pending",
-      createdAt: new Date().toISOString(),
-    };
-
-    products.push(newProduct);
-    localStorage.setItem("products", JSON.stringify(products));
-
-    alert("Бараа амжилттай илгээлээ! Админ баталгаажуулахыг хүлээнэ үү.");
-
-    // Формыг цэвэрлэх
-    setTitle("");
-    setDesc("");
-    setPrice("");
-    setCategory("мах");
-  };
+  const [animal, setAnimal] = useState("cow");
+  const [meatType, setMeatType] = useState(meatTypes.cow[0]);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10">
-      <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-10">
-        <h1 className="text-4xl font-bold mb-8 text-center text-gray-900">
-          Малчны самбар – Бараа оруулах
-        </h1>
-
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <div>
-            <label className="block text-lg font-medium text-gray-700 mb-2">
-              Барааны нэр
-            </label>
-            <input
-              required
-              placeholder="Жишээ: 100% органик хонины мах"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:border-gray-900 focus:outline-none transition text-lg"
-            />
-          </div>
-
-          <div>
-            <label className="block text-lg font-medium text-gray-700 mb-2">
-              Дэлгэрэнгүй тайлбар
-            </label>
-            <textarea
-              required
-              placeholder="Малын нас, тэжээл, гарал үүсэл, онцлог..."
-              value={desc}
-              onChange={(e) => setDesc(e.target.value)}
-              className="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:border-gray-900 focus:outline-none transition text-lg h-40 resize-none"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <label className="block text-lg font-medium text-gray-700 mb-2">
-                Үнэ (₮)
-              </label>
-              <input
-                required
-                type="number"
-                placeholder="150000"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                className="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:border-gray-900 focus:outline-none transition text-lg"
-              />
-            </div>
-
-            <div>
-              <label className="block text-lg font-medium text-gray-700 mb-2">
-                Ангилал
-              </label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-5 py-4 border-2 border-gray-300 rounded-xl focus:border-gray-900 focus:outline-none transition text-lg"
-              >
-                <option value="мах">Мах</option>
-                <option value="сүү">Сүү, цагаан идээ</option>
-                <option value="ноос">Ноос, арьс шир</option>
-                <option value="бусад">Бусад</option>
-              </select>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-gray-900 text-white py-5 rounded-xl hover:bg-black transition font-bold text-xl shadow-lg hover:shadow-2xl"
-          >
-            Админд илгээх
-          </button>
-        </form>
-
-        <div className="mt-8 text-center text-gray-600">
-          <p>Таны оруулсан бараа админы баталгаажуулалтыг хүлээнэ.</p>
-          <p className="mt-2">Баталгаажвал хэрэглэгчдэд харагдах болно!</p>
+    <>
+      {/* ТАБ МЕНЮ */}
+      <div className="max-w-5xl mx-auto mt-8 px-4">
+        <div className="flex flex-wrap gap-4 justify-center border-b border-border pb-8">
+          {["МАХ", "ЦАГААН ИДЭЭ", "АМЬД МАЛ", "АРЬС ШИР"].map((tab) => (
+            <button
+              key={tab}
+              className={`px-10 py-4 rounded-2xl font-bold text-lg transition-all ${
+                tab === "МАХ"
+                  ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white scale-105 shadow-lg"
+                  : "bg-card text-primary border-2 border-border hover:bg-gray-100 dark:hover:bg-gray-800"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
       </div>
-    </div>
+
+      {/* МАХ ОРУУЛАХ ФОРМ */}
+      <div className="max-w-4xl mx-auto mt-12 px-4 pb-20">
+        <h2 className="text-4xl font-bold text-center mb-12 text-blue-400">
+          Малчны самбар – Мах оруулах
+        </h2>
+
+        <div className="space-y-10 bg-card rounded-3xl p-10 shadow-2xl">
+          {/* Амьтны төрөл */}
+          <div>
+            <label className="block text-2xl font-bold mb-6 text-blue-400">Амьтны төрөл</label>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-5">
+              {animalTypes.map((a) => (
+                <button
+                  key={a.value}
+                  onClick={() => {
+                    setAnimal(a.value);
+                    setMeatType(meatTypes[a.value][0]);
+                  }}
+                  className={`py-6 rounded-2xl font-bold text-xl transition-all transform ${
+                    animal === a.value
+                      ? "bg-blue-600 text-white shadow-xl scale-110"
+                      : "bg-gray-200 dark:bg-gray-800 text-primary border-2 border-border hover:scale-105"
+                  }`}
+                >
+                  {a.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Махны төрөл */}
+          <div>
+            <label className="block text-2xl font-bold mb-6 text-green-400">Махны төрөл</label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
+              {meatTypes[animal].map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setMeatType(type)}
+                  className={`py-6 rounded-2xl font-medium text-lg transition-all ${
+                    meatType === type
+                      ? "bg-green-600 text-white shadow-xl ring-4 ring-green-400 ring-opacity-60"
+                      : "bg-gray-200 dark:bg-gray-800 text-primary border-2 border-border hover:bg-gray-300 dark:hover:bg-gray-700"
+                  }`}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Барааны нэр – автоматаар */}
+          <div>
+            <label className="block text-lg font-semibold mb-3">Барааны нэр</label>
+            <input
+              type="text"
+              value={meatType}
+              readOnly
+              className="w-full px-8 py-6 rounded-2xl bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 text-2xl font-bold text-center cursor-not-allowed"
+            />
+          </div>
+
+          {/* Тайлбар */}
+          <div>
+            <label className="block text-lg font-semibold mb-3">Дэлгэрэнгүй тайлбар</label>
+            <textarea
+              rows={5}
+              placeholder="Жишээ: 18 сартай, органик тэжээлтэй, тал хээрт өссөн..."
+              className="w-full px-6 py-5 rounded-2xl border-2 border-border focus:border-blue-500 focus:outline-none resize-none text-lg"
+            />
+          </div>
+
+          {/* Үнэ + Илгээх */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 items-end">
+            <div>
+              <label className="block text-lg font-semibold mb-3">Үнэ (₮ / кг)</label>
+              <input
+                type="number"
+                placeholder="150000"
+                className="w-full px-6 py-6 rounded-2xl border-2 border-border focus:border-blue-500 focus:outline-none text-2xl font-bold text-center"
+              />
+            </div>
+            <button className="py-7 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold text-2xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-2xl transform hover:scale-105">
+              Админд илгээх
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
