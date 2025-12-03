@@ -1,94 +1,113 @@
-// app/(protected)/customer/page.js   ← ЯГ ИЙМ БОЛГООД ХУУЛЧИХААРАЙ!
 "use client";
 
-import { useAuth } from "../../context/AuthContext"; // ← зөвхөн хэрэглэгчийн нэр харуулахад л хэрэглэнэ
+import { useAuth } from "../../context/AuthContext";
 import { useState, useEffect } from "react";
+import { ShoppingCart, Package, User } from "lucide-react";
 
 export default function CustomerDashboard() {
-  const { user } = useAuth(); // ← Хэрэглэгчийн мэдээлэл (жишээ нь: "Бат (Хэрэглэгч)" гэж navbar-д харуулахад хэрэглэнэ)
-  const [products, setProducts] = useState([]); // ← Баталгаажсан бүх барааг энд хадгална
-  const [cart, setCart] = useState([]); // ← Хэрэглэгчийн сагс
+  const { user } = useAuth();
+  const [products, setProducts] = useState([]);
+  const [cart, setCart] = useState([]);
 
-  // Нэг удаа л localStorage-оос бараа, сагсыг ачаална
-  useEffect(() => {
+  // Бараа + сагсыг ачаална + 10 секунд тутам шинэчлэгдэнэ (админ зөвшөөрвөл шууд харагдана)
+  const loadData = () => {
     const allProducts = JSON.parse(localStorage.getItem("products") || "[]");
-    setProducts(allProducts.filter((p) => p.status === "approved"));
+    const approved = allProducts.filter((p) => p.status === "approved");
+    setProducts(approved);
 
     const savedCart = localStorage.getItem("cart");
-    if (savedCart) {
-      setCart(JSON.parse(savedCart));
-    }
+    if (savedCart) setCart(JSON.parse(savedCart));
+  };
+
+  useEffect(() => {
+    loadData();
+    const interval = setInterval(loadData, 10000); // 10 секунд тутам шинэчлэгдэнэ
+    return () => clearInterval(interval);
   }, []);
 
-  // Сагсанд нэмэх функц
   const addToCart = (product) => {
     const newCart = [...cart, { ...product, qty: 1 }];
     setCart(newCart);
     localStorage.setItem("cart", JSON.stringify(newCart));
-    alert(`${product.title} сагсанд нэмэгдлээ!`);
+    alert(`${product.productType || product.title} сагсанд нэмэгдлээ!`);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-12">
       <div className="max-w-7xl mx-auto px-6">
-        {/* Хуудасны гарчиг + Сагсны тоо */}
-        <div className="flex justify-between items-center mb-10">
-          <h1 className="text-4xl font-bold text-gray-900">Бүтээгдэхүүнүүд</h1>
-          <div className="bg-gray-900 text-white px-8 py-4 rounded-xl text-2xl font-bold shadow-lg flex items-center gap-3">
-            Сагс <span className="text-yellow-400">{cart.length}</span>
+        {/* Гарчиг + Сагсны тоо */}
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-12 gap-6">
+          <h1 className="text-5xl font-black text-gray-800 dark:text-white">
+            Бүтээгдэхүүнүүд
+          </h1>
+          <div className="flex items-center gap-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-10 py-5 rounded-2xl shadow-2xl text-2xl font-bold">
+            <ShoppingCart className="w-10 h-10" />
+            Сагс: <span className="text-yellow-300 ml-2">{cart.length}</span>
           </div>
         </div>
 
-        {/* Барааны жагсаалт */}
+        {/* Бараа байхгүй бол */}
         {products.length === 0 ? (
-          <div className="text-center py-24 bg-white rounded-3xl shadow-lg">
-            <p className="text-3xl text-gray-600 font-medium">
+          <div className="text-center py-32 bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border-4 border-dashed border-gray-300">
+            <Package className="w-32 h-32 mx-auto text-gray-400 mb-8" />
+            <p className="text-4xl font-bold text-gray-700 dark:text-gray-300">
               Одоогоор баталгаажсан бараа алга байна
             </p>
-            <p className="text-gray-500 mt-4 text-lg">
-              Малчингууд удахгүй шинэ бараа оруулна!
+            <p className="text-xl text-gray-500 mt-6">
+              Малчингууд удахгүй шинэ бүтээгдэхүүн оруулна!
             </p>
           </div>
         ) : (
-          <div className="grid gap-10 md:grid-cols-3 lg:grid-cols-4">
+          /* Барааны жагсаалт */
+          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {products.map((p) => (
               <div
                 key={p.id}
-                className="bg-white rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-3"
+                className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-4 border border-gray-200 dark:border-gray-700"
               >
-                {/* Зурагны placeholder */}
-                <div className="bg-gradient-to-br from-gray-200 to-gray-300 h-64 flex items-center justify-center border-b-4 border-dashed border-gray-400">
-                  <span className="text-gray-600 font-medium text-lg">
-                    Зураг удахгүй...
-                  </span>
+                {/* Зураг – base64 зураг төгс ажиллана! */}
+                <div className="relative h-64 bg-gray-100">
+                  {p.image ? (
+                    <img
+                      src={p.image}
+                      alt={p.productType || p.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700">
+                      <Package className="w-20 h-20 text-gray-400" />
+                    </div>
+                  )}
+                  {/* Малчины нэр дээр */}
+                  <div className="absolute top-4 left-4 bg-black/70 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    {p.herderName || "Малчин"}
+                  </div>
                 </div>
 
                 {/* Барааны мэдээлэл */}
-                <div className="p-8">
-                  <h3 className="text-2xl font-bold text-gray-900 line-clamp-2">
-                    {p.title}
+                <div className="p-6 space-y-4">
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white line-clamp-2">
+                    {p.productType || p.title}
                   </h3>
-                  <p className="text-lg text-gray-600 mt-2">
-                    Малчин:{" "}
-                    <span className="font-semibold">{p.herderName}</span>
-                  </p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {p.category === "мах"
-                      ? "Мах"
-                      : p.category === "сүү"
-                      ? "Сүү, цагаан идээ"
-                      : p.category}
+
+                  <p className="text-lg text-gray-600 dark:text-gray-400">
+                    {p.animal && `${p.animal} → `}
+                    {p.productType}
                   </p>
 
-                  <p className="text-4xl font-bold text-green-600 mt-6">
-                    {p.price.toLocaleString()}₮
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-4xl font-black text-emerald-600">
+                      {p.price.toLocaleString()}₮
+                    </p>
+                  </div>
 
                   {/* Сагсанд нэмэх товч */}
                   <button
                     onClick={() => addToCart(p)}
-                    className="w-full mt-8 bg-gray-900 text-white py-5 rounded-xl hover:bg-black transition font-bold text-xl shadow-md hover:shadow-xl"
+                    className="w-full mt-6 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xl py-5 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3"
                   >
+                    <ShoppingCart className="w-7 h-7" />
                     Сагсанд нэмэх
                   </button>
                 </div>
