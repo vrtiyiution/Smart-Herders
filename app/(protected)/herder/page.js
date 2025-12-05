@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Upload,
   X,
@@ -161,13 +162,9 @@ export default function HerderDashboard() {
     existing.push(newProduct);
     localStorage.setItem("products", JSON.stringify(existing));
 
-    setSuccessMessage(
-      "Админд амжилттай илгээгдлээ. Таны постыг админ зөвшөөрсний дараа нийтлэгдэнэ."
-    );
-
+    setSuccessMessage("Админд амжилттай илгээгдлээ. Удахгүй нийтлэгдэнэ.");
     setTimeout(() => setSuccessMessage(""), 3000);
 
-    // Форм цэвэрлэх
     setSelectedCategory(null);
     setAnimal("cow");
     setProductType("");
@@ -178,7 +175,6 @@ export default function HerderDashboard() {
 
   const currentCategory = categories.find((c) => c.id === selectedCategory);
 
-  // Эхний хуудас - ангилал сонгох
   if (!selectedCategory) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center p-6">
@@ -199,9 +195,7 @@ export default function HerderDashboard() {
               onClick={() => handleCategorySelect(cat.id)}
               className={`group relative overflow-hidden rounded-3xl p-8 h-64 flex flex-col items-center justify-center text-white shadow-2xl transition-all duration-300 hover:scale-105 ${cat.shadow}`}
             >
-              <div
-                className={`absolute inset-0 bg-gradient-to-br ${cat.color} opacity-90 group-hover:opacity-100 transition-opacity`}
-              />
+              <div className={`absolute inset-0 bg-gradient-to-br ${cat.color} opacity-90 group-hover:opacity-100 transition-opacity`} />
               <div className="relative z-10 flex flex-col items-center space-y-4">
                 <cat.icon className="w-20 h-20 drop-shadow-lg group-hover:rotate-12 transition" />
                 <span className="text-2xl md:text-3xl font-bold text-center">
@@ -211,15 +205,22 @@ export default function HerderDashboard() {
             </button>
           ))}
         </div>
+
+        {/* ТАНЫ ХҮССЭН ТОМ ТОВЧ – ДОЛОО ДООР НЬ */}
+        <div className="mt-20">
+          <Link href="/herder/my-products">
+            <button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-4xl px-20 py-10 rounded-full shadow-3xl transform hover:scale-110 transition-all duration-500">
+              Миний оруулсан бараа харах
+            </button>
+          </Link>
+        </div>
       </div>
     );
   }
 
-  // Дараагийн хуудас - ангилал сонгогдсон үед
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-20">
       <div className="max-w-4xl mx-auto px-4 pt-8">
-
         {successMessage && (
           <div className="mb-6 px-6 py-4 bg-green-600 text-white text-lg font-medium rounded-2xl shadow-lg text-center">
             {successMessage}
@@ -238,9 +239,6 @@ export default function HerderDashboard() {
           {currentCategory?.title} оруулах
         </h2>
 
-        {/* ЭНД ТАНЫ ХУУЧИН UI ЯГ ТАЛБАРТАЙГАА ХАМТ ИДЭВХЖЛЭЭ! */}
-
-        {/* Малын төрөл */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg mb-6">
           <h3 className="text-xl font-bold mb-4">Малын төрөл сонгоно уу</h3>
           <div className="grid grid-cols-3 gap-4">
@@ -259,7 +257,6 @@ export default function HerderDashboard() {
           </div>
         </div>
 
-        {/* Бүтээгдэхүүний төрөл */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg mb-6">
           <h3 className="text-xl font-bold mb-4">{currentCategory?.label}</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -278,7 +275,6 @@ export default function HerderDashboard() {
           </div>
         </div>
 
-        {/* Үнэ, тайлбар, зураг */}
         <div className="space-y-6">
           <input
             type="number"

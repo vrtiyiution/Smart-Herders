@@ -1,14 +1,16 @@
-// app/cart/page.tsx  (эсвэл page.js)
+// app/cart/page.jsx (эсвэл page.tsx)
 "use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ShoppingCart, Package, Trash2, User, Plus, Minus } from "lucide-react";
+import { ShoppingCart, Package, Trash2, User, Plus, Minus, X, CheckCircle, Banknote } from "lucide-react";
 
 export default function CartPage() {
     const [cart, setCart] = useState([]);
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [orderConfirmed, setOrderConfirmed] = useState(false);
 
-    // localStorage-оос ачааллах + ижил барааг нэгтгэх
+    // ==== localStorage ачааллах + ижил барааг нэгтгэх (таны код яг ижил) ====
     useEffect(() => {
         try {
             const saved = localStorage.getItem("cart");
@@ -37,11 +39,9 @@ export default function CartPage() {
         }
     }, []);
 
-    // Уникал ID
     const getId = (item) =>
         `${item.productType}-${item.herderName}-${item.price}-${item.image || "noimg"}`;
 
-    // Устгах
     const removeFromCart = (id) => {
         setCart((prev) => {
             const updated = prev.filter((i) => getId(i) !== id);
@@ -50,7 +50,6 @@ export default function CartPage() {
         });
     };
 
-    // Тоо өөрчлөх
     const updateQty = (id, delta) => {
         setCart((prev) => {
             const updated = prev
@@ -67,12 +66,29 @@ export default function CartPage() {
         });
     };
 
-    // Нийт дүн
     const totalItems = cart.reduce((sum, i) => sum + (i.qty || 1), 0);
     const totalAmount = cart.reduce((sum, i) => sum + Number(i.price || 0) * (i.qty || 1), 0);
 
-    // Сагс хоосон бол
-    if (cart.length === 0) {
+    // Захиалга баталгаажуулах → модал нээх
+    const handleConfirmOrder = () => {
+        setShowPaymentModal(true);
+    };
+
+    // Төлбөр төлсөн гэдгийг баталгаажуулах (энэ жишээнд симуляци)
+    const handlePaymentDone = () => {
+        setOrderConfirmed(true);
+        // Сагсыг хоослох
+        setCart([]);
+        localStorage.removeItem("cart");
+
+        // 3 секундын дараа модалыг хаах
+        setTimeout(() => {
+            setShowPaymentModal(false);
+            setOrderConfirmed(false);
+        }, 3500);
+    };
+
+    if (cart.length === 0 && !showPaymentModal) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-900 p-6">
                 <div className="text-center space-y-8">
@@ -88,7 +104,7 @@ export default function CartPage() {
 
     return (
         <>
-            {/* Header */}
+            {/* Header – таны одоогийн */}
             <div className="sticky top-0 z-50 bg-gray-900/98 backdrop-blur-xl border-b border-gray-800">
                 <div className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
                     <h1 className="text-3xl md:text-4xl font-bold flex items-center gap-4 text-white">
@@ -104,7 +120,7 @@ export default function CartPage() {
             {/* Гол контент */}
             <div className="max-w-7xl mx-auto p-6 pb-40">
                 <div className="grid lg:grid-cols-3 gap-8">
-                    {/* Барааны жагсаалт */}
+                    {/* Барааны жагсаалт – таны одоогийн яг ижил */}
                     <div className="lg:col-span-2 space-y-6">
                         {cart.map((item) => {
                             const id = getId(item);
@@ -112,11 +128,7 @@ export default function CartPage() {
                             const itemTotal = Number(item.price || 0) * qty;
 
                             return (
-                                <div
-                                    key={id}
-                                    className="bg-gray-800/70 backdrop-blur border border-gray-700 rounded-2xl p-6 flex items-center gap-6 hover:border-indigo-500 transition-all"
-                                >
-                                    {/* Зураг */}
+                                <div key={id} className="bg-gray-800/70 backdrop-blur border border-gray-700 rounded-2xl p-6 flex items-center gap-6 hover:border-indigo-500 transition-all">
                                     <div className="w-28 h-28 shrink-0 rounded-xl overflow-hidden border border-gray-600">
                                         {item.image ? (
                                             <img src={item.image} alt={item.productType} className="w-full h-full object-cover" />
@@ -127,7 +139,6 @@ export default function CartPage() {
                                         )}
                                     </div>
 
-                                    {/* Мэдээлэл */}
                                     <div className="flex-1">
                                         <h3 className="text-xl font-bold text-white">{item.productType}</h3>
                                         <p className="text-gray-400 text-sm flex items-center gap-1 mt-1">
@@ -141,32 +152,17 @@ export default function CartPage() {
                                         </p>
                                     </div>
 
-                                    {/* НЭМЭХ/ХАСАХ + УСТГАХ – ЯГ ТАНЫ ЗУРАГ ШИГ НАЙДВАРТАЙ! */}
                                     <div className="flex flex-col items-end gap-5">
                                         <div className="flex items-center bg-gray-800/80 backdrop-blur-md border border-gray-600 rounded-2xl overflow-hidden shadow-xl">
-                                            <button
-                                                onClick={() => updateQty(id, -1)}
-                                                className="w-11 h-11 bg-red-600 hover:bg-red-500 text-white flex items-center justify-center transition-all active:scale-95"
-                                            >
+                                            <button onClick={() => updateQty(id, -1)} className="w-11 h-11 bg-red-600 hover:bg-red-500 text-white flex items-center justify-center transition-all active:scale-95">
                                                 <Minus className="w-5 h-5" strokeWidth={3} />
                                             </button>
-
-                                            <div className="px-6 font-bold text-xl text-white min-w-16 text-center">
-                                                {qty}
-                                            </div>
-
-                                            <button
-                                                onClick={() => updateQty(id, +1)}
-                                                className="w-11 h-11 bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center transition-all active:scale-95"
-                                            >
+                                            <div className="px-6 font-bold text-xl text-white min-w-16 text-center">{qty}</div>
+                                            <button onClick={() => updateQty(id, +1)} className="w-11 h-11 bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center transition-all active:scale-95">
                                                 <Plus className="w-5 h-5" strokeWidth={3} />
                                             </button>
                                         </div>
-
-                                        <button
-                                            onClick={() => removeFromCart(id)}
-                                            className="text-red-400 hover:text-red-300 text-sm font-medium flex items-center gap-1.5 transition"
-                                        >
+                                        <button onClick={() => removeFromCart(id)} className="text-red-400 hover:text-red-300 text-sm font-medium flex items-center gap-1.5 transition">
                                             <Trash2 className="w-4 h-4" /> Устгах
                                         </button>
                                     </div>
@@ -175,7 +171,7 @@ export default function CartPage() {
                         })}
                     </div>
 
-                    {/* Захиалгын хураангуй */}
+                    {/* Захиалгын хураангуй + Товч */}
                     <div className="lg:col-span-1">
                         <div className="sticky top-32 bg-gray-800/95 backdrop-blur-2xl border border-gray-700 rounded-3xl p-8 shadow-2xl">
                             <h2 className="text-3xl font-bold mb-8 text-center text-white">Захиалгын хураангуй</h2>
@@ -193,18 +189,99 @@ export default function CartPage() {
                                     </div>
                                 </div>
                             </div>
+
                             <div className="mt-10">
-                                <button className="w-full bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-500 hover:to-purple-600 text-white font-bold text-xl py-6 rounded-2xl shadow-2xl transform hover:scale-105 transition">
+                                <button
+                                    onClick={handleConfirmOrder}
+                                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-500 hover:to-purple-600 text-white font-bold text-xl py-6 rounded-2xl shadow-2xl transform hover:scale-105 transition flex items-center justify-center gap-3"
+                                >
+                                    <Banknote className="w-8 h-8" />
                                     Захиалга баталгаажуулах
                                 </button>
                                 <p className="text-center text-sm text-gray-400 mt-4">
-                                    Захиалга өгснөөр админ тантай утсаар холбогдоно
+                                    Дараа нь төлбөрийн мэдээлэл гарч ирнэ
                                 </p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* ТӨЛБӨРИЙН МОДАЛ */}
+            {showPaymentModal && (
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-6">
+                    <div className="bg-gray-900 rounded-3xl shadow-2xl max-w-2xl w-full p-10 relative border border-gray-800">
+                        {/* Хаах товч */}
+                        {!orderConfirmed && (
+                            <button
+                                onClick={() => setShowPaymentModal(false)}
+                                className="absolute top-6 right-6 text-gray-400 hover:text-white transition"
+                            >
+                                <X className="w-8 h-8" />
+                            </button>
+                        )}
+
+                        {!orderConfirmed ? (
+                            <>
+                                <h2 className="text-4xl font-black text-center text-white mb-10">
+                                    Төлбөрийн мэдээлэл
+                                </h2>
+
+                                {/* Нийт дүн томоор */}
+                                <div className="bg-gradient-to-r from-emerald-600/20 to-teal-600/20 border border-emerald-600/50 rounded-2xl p-8 text-center mb-8">
+                                    <p className="text-gray-400 text-lg">Төлөх дүн</p>
+                                    <p className="text-6xl font-black text-emerald-400">
+                                        {totalAmount.toLocaleString()} ₮
+                                    </p>
+                                </div>
+
+                                <div className="space-y-6 text-lg">
+                                    <div className="bg-gray-800/70 rounded-2xl p-6 border border-gray-700">
+                                        <p className="text-gray-400">Банк</p>
+                                        <p className="text-2xl font-bold text-white">Хаан Банк</p>
+                                    </div>
+                                    <div className="bg-gray-800/70 rounded-2xl p-6 border border-gray-700">
+                                        <p className="text-gray-400">Дансны дугаар</p>
+                                        <p className="text-3xl font-mono text-yellow-400 tracking-wider select-all">
+                                            5023 4567 8901
+                                        </p>
+                                    </div>
+                                    <div className="bg-gray-800/70 rounded-2xl p-6 border border-gray-700">
+                                        <p className="text-gray-400">Хүлээн авагчийн нэр</p>
+                                        <p className="text-2xl font-bold text-white">Малчны Холбоо ХХК</p>
+                                    </div>
+                                </div>
+
+                                {/* Гүйлгээний утга */}
+                                <div className="mt-8 text-center">
+                                    <p className="text-gray-400 mb-2">Гүйлгээний утга (заавал оруулна уу)</p>
+                                    <p className="text-3xl font-black text-indigo-400 tracking-wider select-all">
+                                        ZAKHIA{Date.now().toString().slice(-6)}
+                                    </p>
+                                </div>
+
+                                <button
+                                    onClick={handlePaymentDone}
+                                    className="w-full mt-10 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-2xl py-6 rounded-2xl shadow-2xl transform hover:scale-105 transition flex items-center justify-center gap-4"
+                                >
+                                    <CheckCircle className="w-9 h-9" />
+                                    Би төлбөр төлсөн
+                                </button>
+                            </>
+                        ) : (
+                            <div className="text-center py-20">
+                                <CheckCircle className="w-32 h-32 mx-auto text-emerald-500 mb-8" />
+                                <h3 className="text-5xl font-black text-emerald-400 mb-4">
+                                    Амжилттай захиаллаа!
+                                </h3>
+                                <p className="text-xl text-gray-300">
+                                    Таны захиалга хүлээн авлаа. Удалгүй админ тантай холбогдоно.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </>
     );
 }
